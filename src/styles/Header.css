@@ -1,0 +1,33 @@
+/* Header Styles */
+.header {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: url("/public/images/Flux_Dev_Create_an_inviting_image_that_showcases_a_thoughtfull_2.jpeg") no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    text-align: center;
+    padding: 15px 20px;
+  }
+  
+  /* Optional overlay for darkening the background */
+  .header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
+    z-index: 1;
+  }
+  
+  /* Ensure header content appears above the overlay */
+  .header > * {
+    position: relative;
+    z-index: 2;
+  }
+  

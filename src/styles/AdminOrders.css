@@ -1,0 +1,188 @@
+/* Overall container styling */
+.admin-orders-container {
+  background: #f7f9fc;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Page title */
+.admin-orders-container h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+/* Actions container for Clear All Orders button */
+.admin-orders-actions {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Clear All Orders Button */
+.clear-orders-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.clear-orders-btn:hover {
+  background: #c82333;
+}
+
+/* Download Invoice Button */
+.download-invoice-btn {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.download-invoice-btn:hover {
+  background: #0056b3;
+}
+
+/* Order card styling */
+.order-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Order header styling */
+.order-header {
+  margin-bottom: 1.5rem;
+}
+
+.order-header h3 {
+  font-size: 1.8rem;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+.order-header p {
+  font-size: 1rem;
+  color: #555;
+  margin: 0.25rem 0;
+}
+
+/* Order items section */
+.order-items {
+  margin-bottom: 1.5rem;
+}
+
+.order-items h4 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.order-items ul {
+  list-style: none;
+  padding: 0;
+}
+
+.order-items li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 1rem;
+  color: #444;
+}
+
+.order-items li:last-child {
+  border-bottom: none;
+}
+
+/* Order total styling */
+.order-total {
+  text-align: right;
+  font-size: 1.4rem;
+  color: #28a745;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Order actions (buttons container) */
+.order-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Remove Order Button */
+.remove-order-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.remove-order-btn:hover {
+  background: #c82333;
+}
+
+/* Approve Order Button */
+.approve-order-btn {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.approve-order-btn:hover {
+  background: #218838;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-orders-container {
+    padding: 1rem;
+  }
+  
+  .order-card {
+    padding: 1rem;
+  }
+  
+  .order-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .order-items h4 {
+    font-size: 1.2rem;
+  }
+  
+  .order-total {
+    font-size: 1.2rem;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-end;
+  }
+}
