@@ -1,49 +1,68 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import '../styles/AdminLogin.css';
 
-const AdminLogin = ({ setIsAdmin }) => {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
+const AdminLogin = () => {
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: ""
+  });
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({ ...prev, [name]: value }));
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleLogin = () => {
-    axios.post('http://127.0.0.1:5000/admin/login', credentials)
-      .then(response => {
-        // If login is successful, update the admin state in your app.
-        setIsAdmin(true);
-        navigate('/admin/orders');
-      })
-      .catch(err => {
-        setError('Invalid username or password');
-      });
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/admin/login", 
+        credentials, // Send username & password from state
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("Response:", response.data);
+
+      if (response.data.token) {
+        localStorage.setItem("adminToken", response.data.token);
+        navigate("/admin/dashboard");
+      } else {
+        alert("Invalid credentials");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      alert("Server error. Check backend.");
+    }
   };
 
   return (
     <div className="admin-login-container">
       <h2>Admin Login</h2>
-      {error && <p className="error">{error}</p>}
-      <input 
-        type="text" 
-        name="username" 
-        placeholder="Username" 
-        value={credentials.username} 
-        onChange={handleChange} 
-      />
-      <input 
-        type="password" 
-        name="password" 
-        placeholder="Password" 
-        value={credentials.password} 
-        onChange={handleChange} 
-      />
-      <button onClick={handleLogin}>Login</button>
+      <form onSubmit={handleLogin}>
+        <input 
+          type="text" 
+          name="username" 
+          placeholder="Username" 
+          value={credentials.username} 
+          onChange={handleChange} 
+          required 
+        />
+        <input 
+          type="password" 
+          name="password" 
+          placeholder="Password" 
+          value={credentials.password} 
+          onChange={handleChange} 
+          required 
+        />
+        <button type="submit">Login</button>
+      </form>
     </div>
   );
 };

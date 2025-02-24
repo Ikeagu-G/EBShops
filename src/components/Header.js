@@ -7,7 +7,7 @@ const Header = ({ cart, isAdmin, setIsAdmin }) => {
   return (
     <header className="header">
       <div className="overlay">
-        <img src="/logo.png" alt="Ebshops Logo" className="logo-image" />
+        {/*<img src="/logo.png" alt="Ebshops Logo" className="logo-image" />*/}
         <h1 className="logo">Ebshops</h1>
         <nav className="nav">
           <Link to="/" className="nav-link"><FiHome /> Home</Link>

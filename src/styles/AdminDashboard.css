@@ -1,0 +1,28 @@
+.admin-dashboard {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .dashboard-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .dashboard-card {
+    padding: 15px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  
+  .logout-btn {
+    margin-top: 20px;
+    background: red;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+  }
+  

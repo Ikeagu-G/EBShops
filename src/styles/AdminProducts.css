@@ -1,0 +1,113 @@
+/* AdminProducts.css */
+
+.admin-products-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: #f7f9fc;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .admin-products-container h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .product-upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 500px;
+    margin: 0 auto 2rem auto;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .product-upload-form input[type="text"],
+  .product-upload-form input[type="number"],
+  .product-upload-form select,
+  .product-upload-form input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .product-upload-form button {
+    padding: 10px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .product-upload-form button:hover {
+    background: #0056b3;
+  }
+  
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .product-card {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  
+  .product-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  
+  .product-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .product-actions button:first-child {
+    background: #28a745;
+    color: #fff;
+  }
+  
+  .product-actions button:first-child:hover {
+    background: #218838;
+  }
+  
+  .product-actions button:last-child {
+    background: #dc3545;
+    color: #fff;
+  }
+  
+  .product-actions button:last-child:hover {
+    background: #c82333;
+  }
+  

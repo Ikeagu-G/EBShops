@@ -1,28 +1,36 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Header from './components/Header';
-import Home from './pages/Home';
-import About from './pages/About'; // Create a simple About page as needed
-import Contact from './pages/Contact'; // Create a simple Contact page as needed
-import CartComponent from './components/CartComponent';
-import Checkout from './pages/Checkout';
-import AdminOrders from './pages/AdminOrders';
-import AdminLogin from './pages/AdminLogin';
-import './styles/App.css';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 
-axios.defaults.withCredentials = true;
+// Import components and pages
+import Header from './components/Header';
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Cart from './components/CartComponent';
+import Checkout from './pages/Checkout';
+import CustomerProducts from './pages/CustomerProducts';
+
+// Admin pages
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import AdminOrders from './pages/AdminOrders';
+import AdminProducts from './pages/AdminProducts';
+import AdminAddProduct from './pages/AdminAddProduct';
+
+import './styles/App.css';
 
 const App = () => {
   const [cart, setCart] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [products, setProducts] = useState([]);
 
-  const products = [
-    { id: 1, name: 'Bedbug Spray', price: 10900.00, image: '/images/Insecticides/BedbugSpray.jpg' },
-    { id: 2, name: 'CockRoach Killer', price: 15090.00, image: '/images/Insecticides/cockroach-killing-bait-propoxur-powder.jpg' },
-    { id: 3, name: 'Rogue', price: 2500.00, image: '/images/Perfumes/pexels-kdjproductions-1557980.jpg' },
-    // ... add more products as needed
-  ];
+  // Fetch products from backend /products endpoint
+  useEffect(() => {
+    axios.get("http://127.0.0.1:5000/products")
+      .then(response => setProducts(response.data))
+      .catch(error => console.error("Error fetching products:", error));
+  }, []);
 
   const addToCart = (product) => {
     setCart([...cart, { ...product, quantity: 1 }]);
@@ -34,17 +42,24 @@ const App = () => {
 
   return (
     <Router>
-      <Header cart={cart} isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
+      <Header cart={cart} />
       <main className="main-content">
-        {/* Navigation links can also be placed in Header */}
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home products={products} addToCart={addToCart} />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/cart" element={<CartComponent cart={cart} removeFromCart={removeFromCart} />} />
+          <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} />} />
           <Route path="/checkout" element={<Checkout cart={cart} />} />
-          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/products" element={<CustomerProducts products={products} addToCart={addToCart} />} />
+
+          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin setIsAdmin={setIsAdmin} />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/orders" element={isAdmin ? <AdminOrders /> : <AdminLogin setIsAdmin={setIsAdmin} />} />
+          <Route path="/admin/products/add" element={isAdmin ? <AdminAddProduct /> : <AdminLogin setIsAdmin={setIsAdmin} />} />
+          <Route path="/admin/products" element={isAdmin ? <AdminProducts /> : <AdminLogin setIsAdmin={setIsAdmin} />} />
+          
         </Routes>
       </main>
     </Router>
