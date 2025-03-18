@@ -27,7 +27,7 @@ const Checkout = ({cart}) => {
           quantity: item.quantity}),
     )};
 
-    axios.post("http://127.0.0.1:5000/orders", payload)
+    axios.post("https://ebshops-backend.onrender.com/orders", payload)
       .then(response => {
         alert("Order placed successfully!");
         setOrder({ name: '', phone: '', location: '' });

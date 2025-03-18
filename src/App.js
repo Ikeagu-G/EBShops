@@ -20,6 +20,8 @@ import AdminAddProduct from './pages/AdminAddProduct';
 
 import './styles/App.css';
 
+const API_BASE_URL= process.env.REACT_APP_API_BASE_URL;
+
 const App = () => {
   const [cart, setCart] = useState([]);
   const [isAdmin, setIsAdmin] = useState(true);
@@ -27,7 +29,7 @@ const App = () => {
 
   // Fetch products from backend /products endpoint
   useEffect(() => {
-    axios.get("http://127.0.0.1:5000/products")
+    axios.get(`${API_BASE_URL}/products`)
       .then(response => setProducts(response.data))
       .catch(error => console.error("Error fetching products:", error));
   }, []);

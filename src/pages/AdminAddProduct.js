@@ -30,7 +30,7 @@ const AdminAddProduct = () => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:5000/admin/products', formData, {
+      const response = await axios.post('https://ebshops-backend.onrender.com/admin/products', formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       alert("Product added successfully!");

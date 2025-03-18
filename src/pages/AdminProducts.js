@@ -10,11 +10,11 @@ const AdminProducts = () => {
     status: "active",
     image: null
   });
-  const API_URL = "http://127.0.0.1:5000/admin/products";
+  const API_URL = "https://ebshops-backend.onrender.com/admin/products";
 
   // Fetch products from backend (for admin, you might show all products)
-  const fetchProducts = () => {
-    axios.get("http://127.0.0.1:5000/products")
+  const fetchProducts = async () => {
+    await axios.get("https://ebshops-backend.onrender.com/products")
       .then(response => setProducts(response.data))
       .catch(error => console.error("Error fetching products:", error));
   };
@@ -92,7 +92,7 @@ const AdminProducts = () => {
       <div className="products-grid">
         {products.map(product => (
           <div key={product.id} className="product-card">
-            <img src={product.image} alt={product.name} className="product-image" />
+            <img src={product.image_url} alt={product.name} className="product-image" />
             <h4>{product.name}</h4>
             <p>Price: NGN {product.price.toFixed(2)}</p>
             <p>Status: {product.status}</p>

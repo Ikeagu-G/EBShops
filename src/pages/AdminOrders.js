@@ -4,9 +4,9 @@ import '../styles/AdminOrders.css';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
-  const API_URL = "http://127.0.0.1:5000/orders";
-  const APPROVE_API_URL = "http://127.0.0.1:5000/admin/approve_order";
-  const DOWNLOAD_API_URL = "http://127.0.0.1:5000/admin/download_invoice";
+  const API_URL = "https://ebshops-backend.onrender.com/orders";
+  const APPROVE_API_URL = "https://ebshops-backend.onrender.com/admin/approve_order";
+  const DOWNLOAD_API_URL = "https://ebshops-backend.onrender.com/admin/download_invoice";
 
   // Fetch orders from backend
   const fetchOrders = () => {
