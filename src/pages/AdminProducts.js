@@ -11,17 +11,43 @@ const AdminProducts = () => {
     image: null
   });
   const API_URL = "https://ebshops-backend.onrender.com/admin/products";
+  const LOGIN_URL = "https://ebshops-backend.onrender.com/admin/login";
 
-  // Fetch products from backend (for admin, you might show all products)
+  // Fetch products from backend
   const fetchProducts = async () => {
-    await axios.get("https://ebshops-backend.onrender.com/products")
-      .then(response => setProducts(response.data))
-      .catch(error => console.error("Error fetching products:", error));
+    try {
+      const response = await axios.get("https://ebshops-backend.onrender.com/products");
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
   };
 
+  // Check login status and fetch token if not present
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Prompt for login if no token (temporary for testing; ideally use a login page)
+      loginAdmin();
+    }
     fetchProducts();
   }, []);
+
+  // Login function to get token
+  const loginAdmin = async () => {
+    try {
+      const response = await axios.post(LOGIN_URL, {
+        username: "Ebube",
+        password: "07062206525"
+      });
+      const token = response.data.token;
+      localStorage.setItem('token', token);
+      console.log("Logged in, token stored:", token);
+    } catch (error) {
+      console.error("Login failed:", error.response?.data || error.message);
+      alert("Please log in as admin to manage products.");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -32,8 +58,13 @@ const AdminProducts = () => {
     }
   };
 
-  const handleUpload = (e) => {
+  const handleUpload = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in first!");
+      return;
+    }
     const formData = new FormData();
     formData.append("name", newProduct.name);
     formData.append("price", newProduct.price);
@@ -42,36 +73,59 @@ const AdminProducts = () => {
       formData.append("file", newProduct.image);
     }
 
-    axios.post(API_URL, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
-      .then(response => {
-        alert("Product added successfully!");
-        setNewProduct({ name: "", price: "", status: "active", image: null });
-        fetchProducts();
-      })
-      .catch(error => console.error("Error uploading product:", error));
+    try {
+      const response = await axios.post(API_URL, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      alert("Product added successfully!");
+      setNewProduct({ name: "", price: "", status: "active", image: null });
+      fetchProducts();
+    } catch (error) {
+      console.error("Error uploading product:", error.response?.data || error.message);
+    }
   };
 
-  const handleUpdate = (productId) => {
+  const handleUpdate = async (productId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in first!");
+      return;
+    }
     const newPrice = prompt("Enter new price:");
     const newStatus = prompt("Enter new status (active/out_of_stock):");
-    axios.put(`${API_URL}/${productId}`, { price: parseFloat(newPrice), status: newStatus })
-      .then(response => {
-        alert("Product updated successfully!");
-        fetchProducts();
-      })
-      .catch(error => console.error("Error updating product:", error));
+    try {
+      const response = await axios.put(`${API_URL}/${productId}`, {
+        price: parseFloat(newPrice),
+        status: newStatus
+      }, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      alert("Product updated successfully!");
+      fetchProducts();
+    } catch (error) {
+      console.error("Error updating product:", error.response?.data || error.message);
+    }
   };
 
-  const handleDelete = (productId) => {
+  const handleDelete = async (productId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in first!");
+      return;
+    }
     if (window.confirm("Are you sure you want to delete this product?")) {
-      axios.delete(`${API_URL}/${productId}`)
-        .then(response => {
-          alert("Product deleted successfully!");
-          fetchProducts();
-        })
-        .catch(error => console.error("Error deleting product:", error));
+      try {
+        const response = await axios.delete(`${API_URL}/${productId}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        alert("Product deleted successfully!");
+        fetchProducts();
+      } catch (error) {
+        console.error("Error deleting product:", error.response?.data || error.message);
+      }
     }
   };
 
