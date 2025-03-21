@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import CartComponent  from '../components/CartComponent';
+
 
 const Checkout = ({cart}) => {
   const [order, setOrder] = useState({ name: '', phone: '', location: '' });
