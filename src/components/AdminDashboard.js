@@ -26,7 +26,7 @@ const AdminDashboard = () => {
         <Link to="/admin/orders" className="dashboard-card">📦 Manage Orders</Link>
         <Link to="/admin/products" className="dashboard-card">🛒 Manage Products</Link>
       </div>
-      <button onClick={handleLogout}>
+      <button onClick={handleLogout} className="logout-btn">
         Logout
       </button>
     </div>
