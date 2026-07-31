@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "../styles/AdminDashboard.css";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [isAdmin, setisAdmin]= useState(false);
-  // Protect the admin dashboard and persist session
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      navigate("/admin/login");
-    }
-    else {setisAdmin(true)}
-  }, [navigate]);
+  const { logout } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-      localStorage.removeItem("adminToken"); // In case it's stored there
-    navigate("/admin/login");
+  // Access control lives in ProtectedRoute; this component no longer inspects
+  // localStorage for a token that cookie-based auth never writes.
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    // logout() swallows request errors, so navigation always happens. The old
+    // version awaited an un-caught POST to a route that did not exist, so a
+    // 404 rejected the promise and the redirect never ran.
+    await logout();
+    navigate('/admin/login', { replace: true });
   };
 
   return (
@@ -26,8 +26,8 @@ const AdminDashboard = () => {
         <Link to="/admin/orders" className="dashboard-card">📦 Manage Orders</Link>
         <Link to="/admin/products" className="dashboard-card">🛒 Manage Products</Link>
       </div>
-      <button onClick={handleLogout} className="logout-btn">
-        Logout
+      <button onClick={handleLogout} className="logout-btn" disabled={loggingOut}>
+        {loggingOut ? 'Logging out…' : 'Logout'}
       </button>
     </div>
   );

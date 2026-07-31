@@ -1,148 +1,141 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Add this import
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api, { getErrorMessage } from '../api';
 import '../styles/AdminOrders.css';
+
+const lineTotal = (item) => (Number(item.price) || 0) * (Number(item.quantity) || 0);
+
+const formatAmount = (value) => (Number(value) || 0).toFixed(2);
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
-  const API_URL = "https://ebshops-backend.onrender.com/orders";
-  const ADMIN_ORDERS_API_URL = "https://ebshops-backend.onrender.com/admin/orders";
-  const APPROVE_API_URL = "https://ebshops-backend.onrender.com/admin/approve_order";
-  const DOWNLOAD_API_URL = "https://ebshops-backend.onrender.com/admin/download_invoice";
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  // Track the order currently being acted on so its buttons can be disabled.
+  const [busyOrderId, setBusyOrderId] = useState(null);
 
-  const navigate = useNavigate(); // For redirection
+  const navigate = useNavigate();
 
-  const fetchOrders = async () => {
-    const token = localStorage.getItem('adminToken'); // Changed to 'adminToken'
-    console.log('Retrieved token:', token);
-    if (!token) {
-      console.error('No token found in localStorage, redirecting to login');
-      navigate('/admin/login'); // Redirect to login page
-      return;
-    }
-
-    const headers = { 'Authorization': `Bearer ${token}` };
-    console.log('Request headers:', headers);
-
-    try {
-      console.log('Making GET request to:', API_URL);
-      const response = await axios.get(API_URL, { headers });
-      console.log('Response status:', response.status);
-      console.log('Response data:', response.data);
-      setOrders(response.data);
-    } catch (error) {
-      console.error('Fetch error:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data
-      });
-      if (error.response?.status === 401) {
-        console.error('Token invalid or expired, redirecting to login');
-        localStorage.removeItem('adminToken'); // Clear invalid token
-        navigate('/admin/login');
+  const handleAuthError = useCallback(
+    (err) => {
+      if (err.response?.status === 401) {
+        navigate('/admin/login', { replace: true });
+        return true;
       }
+      return false;
+    },
+    [navigate]
+  );
+
+  // Auth is cookie-based, so there is no localStorage token to read or attach.
+  // The old code sent `Authorization: Bearer <token from localStorage>`, which
+  // was never populated, so every request was unauthenticated.
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/orders');
+      setOrders(Array.isArray(response.data) ? response.data : []);
+      setError('');
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        setError(getErrorMessage(err, 'Could not load orders.'));
+      }
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [handleAuthError]);
 
   useEffect(() => {
-    console.log('useEffect triggered');
     fetchOrders();
-  }, [navigate]); // Add navigate to deps to ensure it’s available
+  }, [fetchOrders]);
+
+  const calculateOrderTotal = (order) => {
+    if (!order.order_items?.length) return '0.00';
+    return order.order_items.reduce((sum, item) => sum + lineTotal(item), 0).toFixed(2);
+  };
 
   const downloadInvoice = async (orderId) => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
+    setMessage('');
+    setError('');
+    setBusyOrderId(orderId);
+    let objectUrl;
     try {
-      const response = await axios.get(`${DOWNLOAD_API_URL}/${orderId}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        responseType: 'blob'
+      const response = await api.get(`/admin/download_invoice/${orderId}`, {
+        responseType: 'blob',
       });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      objectUrl = window.URL.createObjectURL(
+        new Blob([response.data], { type: 'application/pdf' })
+      );
       const link = document.createElement('a');
-      link.href = url;
+      link.href = objectUrl;
       link.setAttribute('download', `invoice_${orderId}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
-      console.error("Error downloading invoice:", error.response?.data || error.message);
-      alert("Failed to download invoice.");
-      if (error.response?.status === 401) navigate('/admin/login');
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        setError(getErrorMessage(err, 'Failed to download invoice.'));
+      }
+    } finally {
+      // Release the blob URL; the original never revoked it, leaking memory on
+      // every download.
+      if (objectUrl) window.URL.revokeObjectURL(objectUrl);
+      setBusyOrderId(null);
     }
-  };
-
-  const calculateOrderTotal = (order) => {
-    if (!order.order_items || order.order_items.length === 0) return "0.00";
-    return order.order_items.reduce((sum, item) => {
-      const price = parseFloat(item.price) || 0;
-      const quantity = parseFloat(item.quantity) || 0;
-      return sum + (price * quantity);
-    }, 0).toFixed(2);
   };
 
   const approveOrder = async (orderId) => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
-    if (window.confirm("Approve this order and generate an invoice?")) {
-      try {
-        const response = await axios.post(`${APPROVE_API_URL}/${orderId}`, {}, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const invoiceUrl = response.request.responseURL || `${DOWNLOAD_API_URL}/${orderId}`;
-        alert(`Order approved! Invoice URL: ${invoiceUrl}`);
-        fetchOrders();
-      } catch (error) {
-        console.error("Error approving order:", error.response?.data || error.message);
-        alert("Failed to approve order.");
-        if (error.response?.status === 401) navigate('/admin/login');
+    if (!window.confirm('Approve this order and generate an invoice?')) return;
+    setMessage('');
+    setError('');
+    setBusyOrderId(orderId);
+    try {
+      // The endpoint now returns JSON. Previously it answered with a bare 302
+      // and the client read response.request.responseURL, which was unreliable.
+      await api.post(`/admin/approve_order/${orderId}`);
+      setMessage('Order approved. The invoice is ready to download.');
+      await fetchOrders();
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        setError(getErrorMessage(err, 'Failed to approve order.'));
       }
+    } finally {
+      setBusyOrderId(null);
     }
   };
 
   const deleteOrder = async (orderId) => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
-    if (window.confirm("Are you sure you want to delete this order?")) {
-      try {
-        const response = await axios.delete(`${ADMIN_ORDERS_API_URL}/${orderId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        alert(response.data.message);
-        fetchOrders();
-      } catch (error) {
-        console.error("Error deleting order:", error.response?.data || error.message);
-        alert("Failed to delete order.");
-        if (error.response?.status === 401) navigate('/admin/login');
+    if (!window.confirm('Are you sure you want to delete this order?')) return;
+    setMessage('');
+    setError('');
+    setBusyOrderId(orderId);
+    try {
+      const response = await api.delete(`/admin/orders/${orderId}`);
+      setMessage(response.data?.message || 'Order deleted.');
+      await fetchOrders();
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        setError(getErrorMessage(err, 'Failed to delete order.'));
       }
+    } finally {
+      setBusyOrderId(null);
     }
   };
 
   const clearOrders = async () => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
+    if (!window.confirm('Are you sure you want to clear ALL orders? This cannot be undone.')) {
       return;
     }
-    if (window.confirm("Are you sure you want to clear all orders?")) {
-      try {
-        const response = await axios.delete(ADMIN_ORDERS_API_URL, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        alert(response.data.message);
-        setOrders([]);
-      } catch (error) {
-        console.error("Error clearing orders:", error.response?.data || error.message);
-        alert("Failed to clear orders.");
-        if (error.response?.status === 401) navigate('/admin/login');
+    setMessage('');
+    setError('');
+    try {
+      const response = await api.delete('/admin/orders');
+      setMessage(response.data?.message || 'All orders cleared.');
+      setOrders([]);
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        setError(getErrorMessage(err, 'Failed to clear orders.'));
       }
     }
   };
@@ -150,12 +143,23 @@ const AdminOrders = () => {
   return (
     <div className="admin-orders-container">
       <h2>Admin Orders</h2>
+
+      {message && <p className="success-message">{message}</p>}
+      {error && (
+        <p className="error-message" role="alert">
+          {error}
+        </p>
+      )}
+
       <div className="admin-orders-actions">
-        <button onClick={clearOrders} className="clear-orders-btn">
+        <button onClick={clearOrders} className="clear-orders-btn" disabled={!orders.length}>
           Clear All Orders
         </button>
       </div>
-      {orders.length === 0 ? (
+
+      {loading ? (
+        <p>Loading orders…</p>
+      ) : orders.length === 0 ? (
         <p>No orders available.</p>
       ) : (
         orders.map((order) => (
@@ -169,11 +173,11 @@ const AdminOrders = () => {
             </div>
             <div className="order-items">
               <h4>Items:</h4>
-              {order.order_items && order.order_items.length > 0 ? (
+              {order.order_items?.length ? (
                 <ul>
-                  {order.order_items.map((item, i) => (
-                    <li key={i}>
-                      {item.item_name} x {item.quantity} = ₦{(item.price * item.quantity).toFixed(2)}
+                  {order.order_items.map((item) => (
+                    <li key={item.id || `${item.item_name}-${item.quantity}`}>
+                      {item.item_name} x {item.quantity} = ₦{formatAmount(lineTotal(item))}
                     </li>
                   ))}
                 </ul>
@@ -185,13 +189,25 @@ const AdminOrders = () => {
               <h4>Total: ₦{calculateOrderTotal(order)}</h4>
             </div>
             <div className="order-actions">
-              <button onClick={() => downloadInvoice(order.id)} className="download-invoice-btn">
+              <button
+                onClick={() => downloadInvoice(order.id)}
+                className="download-invoice-btn"
+                disabled={busyOrderId === order.id}
+              >
                 Download Invoice
               </button>
-              <button onClick={() => approveOrder(order.id)} className="approve-order-btn">
-                Approve Order
+              <button
+                onClick={() => approveOrder(order.id)}
+                className="approve-order-btn"
+                disabled={busyOrderId === order.id || order.status === 'approved'}
+              >
+                {order.status === 'approved' ? 'Approved' : 'Approve Order'}
               </button>
-              <button onClick={() => deleteOrder(order.id)} className="remove-order-btn">
+              <button
+                onClick={() => deleteOrder(order.id)}
+                className="remove-order-btn"
+                disabled={busyOrderId === order.id}
+              >
                 Delete Order
               </button>
             </div>

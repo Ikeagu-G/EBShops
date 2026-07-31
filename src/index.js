@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import './styles/App.css';	// Import the App.css file
+// styles/App.css is imported by App.js; importing it here too duplicated it.
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

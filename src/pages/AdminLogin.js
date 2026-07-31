@@ -1,96 +1,90 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getErrorMessage } from '../api';
+import { useAuth } from '../context/AuthContext';
 import '../styles/AdminLogin.css';
 
-const API_BASE_URL= process.env.REACT_APP_API_BASE_URL;
-
 const AdminLogin = () => {
-  const [credentials, setCredentials] = useState({
-    username: "",
-    password: ""
-  });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAdmin, checking, login } = useAuth();
+
+  const redirectTo = location.state?.from || '/admin/dashboard';
+
+  // If an existing cookie session is still valid, skip the form.
+  useEffect(() => {
+    if (!checking && isAdmin) {
+      navigate(redirectTo, { replace: true });
+    }
+  }, [checking, isAdmin, navigate, redirectTo]);
 
   const handleChange = (e) => {
-    setCredentials({
-      ...credentials,
-      [e.target.name]: e.target.value
-    });
-    setError("");
+    setCredentials((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!credentials.username || !credentials.password){
-      setError("Please enter both username and password");
+    if (!credentials.username || !credentials.password) {
+      setError('Please enter both username and password.');
       return;
     }
-    setLoading(true);
-    setError("");
-    
+
+    setSubmitting(true);
+    setError('');
     try {
-      const response = await axios.post(`${API_BASE_URL}/admin/login`, 
-        
-      
-        credentials, // Send username & password from state
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      console.log("Response:", response.data);
-      const token = response.data.token || response.data.access_token;
-
-      if (token) {
-        localStorage.setItem("adminToken", token);
-        navigate("/admin/dashboard");
-      } else {
-        setError("Login failed: No token received.");
-      }
+      // Success is signalled by a 2xx plus httpOnly cookies. The old code looked
+      // for response.data.token, which the backend never returns, so a correct
+      // password still showed "Login failed: No token received."
+      await login(credentials.username, credentials.password);
+      navigate(redirectTo, { replace: true });
     } catch (err) {
-      console.error("Login failed:", err);
-      if (err.response){
-        const status = err.response.status;
-        if (status === 401){
-          setError("Invalid username or password.");
-        }else if ( status === 500){
-          setError("Server error. Please try again later.");
-        }else {
-          setError(`Error ${status}: ${err.response.data.message || "Unknown error"}`);
-        }
-      }else if (err.request){
-        setError("Network error. Check your connection or backend status.");
-      }else{
-        setError("An unexpected error occurred.");
+      if (err.response?.status === 401) {
+        setError('Invalid username or password.');
+      } else {
+        setError(getErrorMessage(err, 'Login failed. Please try again.'));
       }
-      }finally{
-        setLoading(false);
-      }
-    };
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="admin-login-container">
       <h2>Admin Login</h2>
+      {/* The error state was previously set but never rendered, leaving failures
+          silent apart from a console log. */}
+      {error && (
+        <p className="error-message" role="alert">
+          {error}
+        </p>
+      )}
       <form onSubmit={handleLogin}>
-        <input 
-          type="text" 
-          name="username" 
-          placeholder="Username" 
-          value={credentials.username} 
-          onChange={handleChange} 
-          required 
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          autoComplete="username"
+          value={credentials.username}
+          onChange={handleChange}
+          required
         />
-        <input 
-          type="password" 
-          name="password" 
-          placeholder="Password" 
-          value={credentials.password} 
-          onChange={handleChange} 
-          required 
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          autoComplete="current-password"
+          value={credentials.password}
+          onChange={handleChange}
+          required
         />
-        <button type="submit">Login</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Logging in…' : 'Login'}
+        </button>
       </form>
     </div>
   );

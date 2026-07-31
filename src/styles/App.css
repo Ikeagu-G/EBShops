@@ -30,7 +30,8 @@ a {
   position: relative;
   width: 100%;
   height: 400px;
-  background: url("/public/images/Flux_Dev_Create_an_inviting_image_that_showcases_a_thoughtfull_2.jpeg") no-repeat center center;
+  /* See Header.css: "/public/images/..." never resolves in a CRA build. */
+  background: linear-gradient(135deg, #1f2937 0%, #0f766e 100%) no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;
@@ -372,6 +373,96 @@ footer {
   border-top: 1px solid #444;
   font-size: 0.9rem;
   text-align: center;
+}
+
+/* STATUS MESSAGES */
+.error-message {
+  background: #fdecea;
+  border: 1px solid #f5c2bd;
+  color: #a4302a;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.success-message {
+  background: #e7f6ec;
+  border: 1px solid #bbe3c8;
+  color: #1c6b38;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.auth-checking {
+  text-align: center;
+  padding: 40px 0;
+  color: #666;
+}
+
+/* Placeholder shown when a product has no image or the image fails to load */
+.product-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* Cart quantity stepper */
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cart-item-quantity button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.cart-item-quantity button:hover {
+  background: #f1f1f1;
+}
+
+.cart-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.checkout-summary {
+  text-align: left;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.checkout-summary ul {
+  list-style: none;
+  padding: 0;
+}
+
+.checkout-summary li {
+  padding: 5px 0;
+}
+
+.logo-link {
+  display: inline-block;
+}
+
+/* Disabled controls should read as unavailable */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Responsive Design */
